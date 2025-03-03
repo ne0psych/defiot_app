@@ -2,16 +2,23 @@ import 'package:intl/intl.dart';
 
 /// A utility class that provides date formatting functions
 class DateFormatter {
-  /// Format a date to a standard display format: Jan 1, 2023
-  static String formatDate(DateTime date) {
+  static String format(DateTime date) {
     return DateFormat('MMM d, yyyy').format(date);
   }
 
-  /// Format a date to show the time: 12:30 PM
-  static String formatTime(DateTime date) {
-    return DateFormat('h:mm a').format(date);
+  static String formatWithTime(DateTime date) {
+    return DateFormat('MMM d, yyyy HH:mm').format(date);
   }
 
+  static String formatRange(DateTime start, DateTime end) {
+  if (start.year == end.year && start.month == end.month) {
+    return '${DateFormat('MMM d').format(start)}-${DateFormat('d, yyyy').format(end)}';
+  } else if (start.year == end.year) {
+    return '${DateFormat('MMM d').format(start)} - ${DateFormat('MMM d, yyyy').format(end)}';
+  } else {
+    return '${DateFormat('MMM d, yyyy').format(start)} - ${DateFormat('MMM d, yyyy').format(end)}';
+  }
+}
   /// Format a date to show date and time: Jan 1, 2023 - 12:30 PM
   static String formatDateTime(DateTime date) {
     return DateFormat('MMM d, yyyy - h:mm a').format(date);

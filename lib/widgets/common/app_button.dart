@@ -1,276 +1,195 @@
+// lib/widgets/common/app_button.dart
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 
-/// A customized button widget for consistent styling across the app
+enum AppButtonType {
+  primary,
+  secondary,
+  outlined,
+  error, icon, text
+}
+enum AppButtonSize { small, medium, large }
+
 class AppButton extends StatelessWidget {
-  /// The callback function when the button is pressed
-  final VoidCallback onPressed;
-
-  /// Button text label
-  final String label;
-
-  /// Optional icon to display before the text
+  final String? text;
   final IconData? icon;
-
-  /// Optional loading state
+  final VoidCallback? onPressed;
+  final AppButtonType type;
+  final AppButtonSize size;
   final bool isLoading;
-
-  /// Optional button color
+  final bool fullWidth;
   final Color? color;
 
-  /// Optional text color
-  final Color? textColor;
-
-  /// Optional expanded width
-  final bool expanded;
-
-  /// Creates an AppButton
   const AppButton({
     Key? key,
-    required this.onPressed,
-    required this.label,
+    this.text,
     this.icon,
+    this.onPressed,
+    this.type = AppButtonType.primary,
+    this.size = AppButtonSize.medium,
     this.isLoading = false,
-    this.color,
-    this.textColor,
-    this.expanded = true,
+    this.fullWidth = false,
+    this.color, required String label,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final buttonWidget = ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color ?? Theme.of(context).primaryColor,
-        foregroundColor: textColor ?? Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 2,
-      ),
-      child: isLoading
-          ? SizedBox(
-        width: 24,
+    // Define button styling based on type and size
+    late final ButtonStyle buttonStyle;
+    late final double height;
+    late final EdgeInsetsGeometry padding;
+    late final double fontSize;
+
+    switch (size) {
+      case AppButtonSize.small:
+        height = 36;
+        padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+        fontSize = 14;
+        break;
+      case AppButtonSize.medium:
+        height = 44;
+        padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 10);
+        fontSize = 16;
+        break;
+      case AppButtonSize.large:
+        height = 56;
+        padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 14);
+        fontSize = 18;
+        break;
+    }
+
+    switch (type) {
+      case AppButtonType.primary:
+        buttonStyle = ElevatedButton.styleFrom(
+          backgroundColor: color ?? AppColors.primary,
+          foregroundColor: AppColors.textLight,
+          elevation: 2,
+          padding: padding,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.medium),
+          ),
+        );
+        break;
+      case AppButtonType.secondary:
+        buttonStyle = ElevatedButton.styleFrom(
+          backgroundColor: color?.withOpacity(0.1) ?? AppColors.primary.withOpacity(0.1),
+          foregroundColor: color ?? AppColors.primary,
+          elevation: 0,
+          padding: padding,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.medium),
+          ),
+        );
+        break;
+      case AppButtonType.text:
+        buttonStyle = TextButton.styleFrom(
+          foregroundColor: color ?? AppColors.primary,
+          padding: padding,
+        );
+        break;
+      case AppButtonType.outlined:
+        buttonStyle = OutlinedButton.styleFrom(
+          foregroundColor: color ?? AppColors.primary,
+          padding: padding,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.medium),
+          ),
+          side: BorderSide(color: color ?? AppColors.primary),
+        );
+        break;
+      case AppButtonType.icon:
+        buttonStyle = IconButton.styleFrom(
+          foregroundColor: color ?? AppColors.primary,
+          padding: padding,
+        );
+        break;
+      case AppButtonType.error:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+    }
+
+    // Create button content
+    Widget buttonContent;
+
+    if (isLoading) {
+      buttonContent = SizedBox(
         height: 24,
+        width: 24,
         child: CircularProgressIndicator(
-          color: textColor ?? Colors.white,
+          color: type == AppButtonType.primary ? Colors.white : (color ?? AppColors.primary),
           strokeWidth: 2,
         ),
-      )
-          : _buildButtonContent(),
-    );
-
-    // Return either a full-width button or a normal button based on expanded flag
-    return expanded
-        ? SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: buttonWidget,
-    )
-        : buttonWidget;
-  }
-
-  /// Builds the content of the button (icon + text or just text)
-  Widget _buildButtonContent() {
-    if (icon != null) {
-      return Row(
+      );
+    } else if (icon != null && text != null) {
+      buttonContent = Row(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+            text!,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
+      );
+    } else if (icon != null) {
+      buttonContent = Icon(icon);
+    } else if (text != null) {
+      buttonContent = Text(
+        text!,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w600,
+        ),
       );
     } else {
-      return Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      );
+      buttonContent = const SizedBox();
     }
-  }
-}
 
-/// A text button variant with consistent styling
-class AppTextButton extends StatelessWidget {
-  /// The callback function when the button is pressed
-  final VoidCallback onPressed;
+    // Apply fullWidth setting
+    Widget button;
 
-  /// Button text label
-  final String label;
+    switch (type) {
+      case AppButtonType.icon:
+        button = IconButton(
+          onPressed: isLoading ? null : onPressed,
+          icon: buttonContent,
+          style: buttonStyle,
+        );
+        break;
+      case AppButtonType.text:
+        button = TextButton(
+          onPressed: isLoading ? null : onPressed,
+          style: buttonStyle,
+          child: buttonContent,
+        );
+        break;
+      case AppButtonType.outlined:
+        button = OutlinedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: buttonStyle,
+          child: buttonContent,
+        );
+        break;
+      default:
+        button = ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: buttonStyle,
+          child: buttonContent,
+        );
+    }
 
-  /// Optional icon to display before the text
-  final IconData? icon;
-
-  /// Optional color
-  final Color? color;
-
-  /// Creates an AppTextButton
-  const AppTextButton({
-    Key? key,
-    required this.onPressed,
-    required this.label,
-    this.icon,
-    this.color,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        foregroundColor: color ?? Theme.of(context).primaryColor,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon),
-            const SizedBox(width: 8),
-          ],
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// An outlined button variant with consistent styling
-class AppOutlinedButton extends StatelessWidget {
-  /// The callback function when the button is pressed
-  final VoidCallback onPressed;
-
-  /// Button text label
-  final String label;
-
-  /// Optional icon to display before the text
-  final IconData? icon;
-
-  /// Optional color
-  final Color? color;
-
-  /// Optional expanded width
-  final bool expanded;
-
-  /// Creates an AppOutlinedButton
-  const AppOutlinedButton({
-    Key? key,
-    required this.onPressed,
-    required this.label,
-    this.icon,
-    this.color,
-    this.expanded = false,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final buttonWidget = OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: color ?? Theme.of(context).primaryColor,
-        side: BorderSide(color: color ?? Theme.of(context).primaryColor, width: 2),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (icon != null) ...[
-            Icon(icon),
-            const SizedBox(width: 8),
-          ],
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return expanded
-        ? SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: buttonWidget,
-    )
-        : buttonWidget;
-  }
-}
-
-/// A floating action button variant with consistent styling
-class AppFloatingActionButton extends StatelessWidget {
-  /// The callback function when the button is pressed
-  final VoidCallback onPressed;
-
-  /// Icon to display
-  final IconData icon;
-
-  /// Optional tooltip text
-  final String? tooltip;
-
-  /// Optional color
-  final Color? color;
-
-  /// Optional label for extended FAB
-  final String? label;
-
-  /// Creates an AppFloatingActionButton
-  const AppFloatingActionButton({
-    Key? key,
-    required this.onPressed,
-    required this.icon,
-    this.tooltip,
-    this.color,
-    this.label,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final backgroundColor = color ?? Theme.of(context).primaryColor;
-
-    if (label != null) {
-      return FloatingActionButton.extended(
-        onPressed: onPressed,
-        backgroundColor: backgroundColor,
-        tooltip: tooltip,
-        icon: Icon(icon, color: Colors.white),
-        label: Text(
-          label!,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+    if (fullWidth && type != AppButtonType.icon) {
+      return SizedBox(
+        width: double.infinity,
+        height: height,
+        child: button,
       );
     }
 
-    return FloatingActionButton(
-      onPressed: onPressed,
-      backgroundColor: backgroundColor,
-      tooltip: tooltip,
-      child: Icon(icon, color: Colors.white),
-    );
+    return button;
   }
 }

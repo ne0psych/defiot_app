@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_routes.dart';
+import 'core/enums/app_enums.dart';
 import 'providers/auth_provider.dart';
 import 'providers/device_provider.dart';
 import 'providers/scan_provider.dart';
@@ -55,15 +56,15 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  List<SingleChildWidget> _buildProviders() {
+  List<Provider> _buildProviders() {
     // Create shared services
     final tokenInterceptor = TokenInterceptor();
     final loggingInterceptor = LoggingInterceptor();
     final apiClient = ApiClient(
+      baseUrl: AppConfig.apiBaseUrl,
       tokenInterceptor: tokenInterceptor,
       loggingInterceptor: loggingInterceptor,
     );
-
     // Create service instances
     final authService = AuthService(
       apiClient: apiClient,

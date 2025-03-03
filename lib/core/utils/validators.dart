@@ -1,13 +1,10 @@
 /// A utility class that contains validation methods for forms
 class Validators {
-  /// Validates that a value is not empty
-  static String? validateRequired(String message) {
-    return (String? value) {
-      if (value == null || value.isEmpty) {
-        return message;
-      }
-      return null;
-    };
+  static String? validateRequired(String? value, {required String message}) {
+    if (value == null || value.isEmpty) {
+      return message;
+    }
+    return null;
   }
 
   /// Validates email format

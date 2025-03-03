@@ -183,7 +183,14 @@ class AppConstants {
     'month': 'Monthly',
     'custom': 'Custom Range',
   };
-
+  static const Map<String, dynamic> defaultSettings = {
+    'theme': 'system',
+    'language': 'english',
+    'autoUpdate': true,
+    'analyticsEnabled': true,
+    'developerMode': false,
+    'notificationsEnabled': true,
+  };
   // Report Export Formats
   static const Map<String, String> reportExportFormats = {
     'pdf': 'PDF Document',
@@ -208,9 +215,17 @@ class AppConstants {
   static const String settingsUpdatedMessage = 'Settings updated successfully.';
   static const String passwordChangedMessage = 'Password changed successfully.';
   static const String profileUpdatedMessage = 'Profile updated successfully.';
+  static const String routeLogin = '/login';
+  static const String routeAddDevice = '/devices/add';
+  static const String routeApiKeys = '/settings/api-keys';
+  static const String routeSubscription = '/settings/subscription';
+  static const String routeHelp = '/settings/help';
+  static const String routeTerms = '/settings/terms';
+  static const String routeReportProblem = '/settings/report-problem';
+}
 
   // Default Values
-  static const Map<String, dynamic> defaultSettings = {
+  const Map<String, dynamic> defaultSettings = {
     'theme': 'system',
     'language': 'english',
     'autoUpdate': true,
@@ -218,7 +233,7 @@ class AppConstants {
     'developerMode': false,
     'notificationsEnabled': true,
   };
-}
+
 
 /// Language option model for dropdowns
 class LanguageOption {

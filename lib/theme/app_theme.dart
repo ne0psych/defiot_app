@@ -6,6 +6,13 @@ class AppColors {
   static const Color primary = Color(0xFF6A40B8);  // Deep purple from your welcome screen
   static const Color primaryLight = Color(0xFF8A60D8);  // Light purple
   static const Color primaryDark = Color(0xFF4E2D8B);  // Dark purple
+  static Color get onPrimary => Colors.white;
+  static Color get onError => Colors.white;
+  static Color get onSuccess => Colors.white;
+  static Color get surface => Colors.white;
+  static Color get shadow => Colors.black12;
+  static Color get border => Colors.grey.shade300;
+  static Color get divider => Colors.grey.shade300;
 
   // Supporting colors
   static const Color secondary = Color(0xFF4ECDC4); // A teal accent
@@ -90,6 +97,9 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     color: AppColors.textLight,
   );
+  static TextStyle get headline => TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
+  static TextStyle get bodyBold => TextStyle(fontWeight: FontWeight.bold);
+  static TextStyle get title => TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 }
 
 class AppWidgetStyles {

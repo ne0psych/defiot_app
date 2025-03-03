@@ -1,6 +1,7 @@
 // lib/screens/scans/widgets/scan_card.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../core/enums/app_enums.dart';
 import '../../../models/scan_model.dart';
 import '../../../theme/app_theme.dart';
 

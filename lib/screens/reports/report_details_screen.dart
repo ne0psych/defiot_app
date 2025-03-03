@@ -1,4 +1,5 @@
 // lib/screens/reports/report_details_screen.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -28,15 +29,18 @@ class ReportDetailsScreen extends StatefulWidget {
   State<ReportDetailsScreen> createState() => _ReportDetailsScreenState();
 }
 
-class _ReportDetailsScreenState extends State<ReportDetailsScreen> with SingleTickerProviderStateMixin {
+class _ReportDetailsScreenState extends State<ReportDetailsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedFormat = 'PDF';
   bool _isExporting = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _fetchReportDetails();
   }
 
   @override
@@ -44,90 +48,122 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> with SingleTi
     _tabController.dispose();
     super.dispose();
   }
+  Future<void> _fetchReportDetails() async {
+    setState(() => _isLoading = true);
+    try {
+      final reportProvider = Provider.of<ReportProvider>(
+          context,
+          listen: false
+      );
+
+      // Fetch additional report details if needed
+      await reportProvider.fetchReportById(widget.report.reportId);
+    } catch (e) {
+      _showErrorSnackBar('Failed to load report details');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _exportReport() async {
     if (_isExporting) return;
 
     try {
-      setState(() {
-        _isExporting = true;
-      });
+      setState(() => _isExporting = true);
 
-      // Show format selection dialog
       final format = await showDialog<String>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Export Report', style: AppTextStyles.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Select format:', style: AppTextStyles.body),
-              const SizedBox(height: AppSpacing.medium),
-              StatefulBuilder(
-                builder: (context, setState) => DropdownButtonFormField<String>(
-                  value: _selectedFormat,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.small),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'PDF', child: Text('PDF Document')),
-                    DropdownMenuItem(value: 'CSV', child: Text('CSV File')),
-                    DropdownMenuItem(value: 'Excel', child: Text('Excel Spreadsheet')),
-                    DropdownMenuItem(value: 'JSON', child: Text('JSON File')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedFormat = value;
-                      });
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            AppButton(
-              label: 'Export',
-              onPressed: () => Navigator.of(context).pop(_selectedFormat),
-              buttonType: AppButtonType.primary,
-            ),
-          ],
-        ),
+        builder: (context) => _buildExportDialog(),
       );
 
-      if (format == null) {
-        setState(() {
-          _isExporting = false;
-          AppButton(
-            label: issue.status == _MockIssueStatus.inProgress
-                ? 'Mark Resolved'
-                : 'Start Remediation',
-            onPressed: () {
-              // This would be implemented with real functionality in a complete app
-              _showSuccessSnackBar('Status updated successfully');
-            },
-            buttonType: AppButtonType.secondary,
-            size: AppButtonSize.small,
-          ),
-          ],
-          ),
-          ],
-          ],
-          ),
-          ),
-          );
-        }
+      if (format != null) {
+        final reportProvider = Provider.of<ReportProvider>(
+            context,
+            listen: false
+        );
 
-            Widget _buildIssueStatusBadge(_MockIssueStatus status) {
+        await reportProvider.exportReport(
+            widget.report.reportId,
+            format: format.toLowerCase()
+        );
+
+        _showSuccessSnackBar('Report exported successfully');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Export failed: ${e.toString()}');
+    } finally {
+      setState(() => _isExporting = false);
+    }
+  }
+
+  AlertDialog _buildExportDialog() {
+    return AlertDialog(
+      title: Text('Export Report', style: AppTextStyles.title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Select format:', style: AppTextStyles.body),
+          const SizedBox(height: AppSpacing.medium),
+          StatefulBuilder(
+            builder: (context, setState) => DropdownButtonFormField<String>(
+              value: _selectedFormat,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.small),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.medium
+                ),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'PDF', child: Text('PDF Document')),
+                DropdownMenuItem(value: 'CSV', child: Text('CSV File')),
+                DropdownMenuItem(value: 'Excel', child: Text('Excel Spreadsheet')),
+                DropdownMenuItem(value: 'JSON', child: Text('JSON File')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selectedFormat = value);
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        AppButton(
+          label: 'Export',
+          onPressed: () => Navigator.of(context).pop(_selectedFormat),
+          buttonType: AppButtonType.primary,
+        ),
+      ],
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.success,
+      ),
+    );
+  }
+
+  Widget _buildIssueStatusBadge(_MockIssueStatus status) {
           late Color color;
           late String text;
 
@@ -305,6 +341,24 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> with SingleTi
           return value.toString();
         }
       }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Report Details', style: AppTextStyles.heading3),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.download),
+          onPressed: _exportReport,
+          tooltip: 'Export Report',
+        ),
+      ],
+    ),
+    body: _isLoading
+        ? const Center(child: LoadingIndicator())
+        : _buildReportDetails(),
+  );
+}
 
 // Mock classes for demonstration purposes
     class _MockDevice {

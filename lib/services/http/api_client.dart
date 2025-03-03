@@ -1,6 +1,7 @@
 // lib/services/http/api_client.dart
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
@@ -47,8 +48,7 @@ class ApiClient {
         Duration? timeout,
       }) async {
     try {
-      final uri = Uri.parse('$baseUrl$endpoint')
-          .replace(queryParameters: queryParams);
+      final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
 
       if (kDebugMode) {
         print('GET Request: ${uri.toString()}');
@@ -59,11 +59,12 @@ class ApiClient {
           .timeout(timeout ?? defaultTimeout);
 
       return _handleResponse(response);
+    } on SocketException {
+      throw NetworkException(message: 'No internet connection');
     } on TimeoutException {
-      throw NetworkException('Request timed out');
+      throw NetworkException(message: 'Request timeout');
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw NetworkException('Network error: ${e.toString()}');
+      throw NetworkException(message: 'Unexpected error: ${e.toString()}');
     }
   }
 

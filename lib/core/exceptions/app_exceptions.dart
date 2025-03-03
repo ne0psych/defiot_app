@@ -1,20 +1,16 @@
 /// Base exception class for the application
-class AppException implements Exception {
+abstract class AppException implements Exception {
   final String message;
   final dynamic exception;
 
-  AppException({
+  const AppException({
     required this.message,
     this.exception,
   });
-
-  @override
-  String toString() => message;
 }
 
-/// Exception for network connectivity issues
 class NetworkException extends AppException {
-  NetworkException({
+  const NetworkException({
     required String message,
     dynamic exception,
   }) : super(message: message, exception: exception);
@@ -94,6 +90,15 @@ class NotFoundException extends HttpException {
   }) : super(message: message, statusCode: statusCode, exception: exception);
 }
 
+class ParseException extends AppException {
+  const ParseException({
+    required String message,
+    dynamic exception,
+  }) : super(
+    message: message,
+    exception: exception,
+  );
+}
 /// Exception for 409 Conflict
 class ConflictException extends HttpException {
   ConflictException({
@@ -104,15 +109,14 @@ class ConflictException extends HttpException {
 }
 
 /// Exception for 422 Validation Error
-class ValidationException extends HttpException {
-  final Map<String, String>? errors;
+class ValidationException extends AppException {
+  final Map<String, List<String>>? fieldErrors;
 
-  ValidationException({
+  const ValidationException({
     required String message,
-    required int statusCode,
-    this.errors,
+    this.fieldErrors,
     dynamic exception,
-  }) : super(message: message, statusCode: statusCode, exception: exception);
+  }) : super(message: message, exception: exception);
 }
 
 /// Exception for 429 Rate Limited
@@ -126,7 +130,7 @@ class RateLimitedException extends HttpException {
 
 /// Exception for authentication errors
 class AuthException extends AppException {
-  AuthException({
+  const AuthException({
     required String message,
     dynamic exception,
   }) : super(message: message, exception: exception);

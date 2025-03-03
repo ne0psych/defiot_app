@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-
 import '../../core/utils/date_formatter.dart';
 import '../../models/device_model.dart';
 import '../../models/scan_model.dart';

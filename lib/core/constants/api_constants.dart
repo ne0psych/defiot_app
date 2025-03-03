@@ -9,7 +9,13 @@ class ApiConstants {
   static const String scansEndpoint = '/scans';
   static const String reportsEndpoint = '/reports';
   static const String settingsEndpoint = '/settings';
-
+  static const String routeLogin = '/login';
+  static const String routeAddDevice = '/devices/add';
+  static const String routeApiKeys = '/settings/api-keys';
+  static const String routeSubscription = '/settings/subscription';
+  static const String routeHelp = '/settings/help';
+  static const String routeTerms = '/settings/terms';
+  static const String routeReportProblem = '/settings/report-problem';
   // Timeouts
   static const int defaultTimeoutSeconds = 30;
   static const int uploadTimeoutSeconds = 120;
